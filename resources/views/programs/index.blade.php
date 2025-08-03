@@ -223,7 +223,7 @@
                class="bg-white text-red-600 px-8 py-4 rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-600 transition-colors font-bold text-base">
                 {{ __('Get Involved') }}
             </a>
-            <a href="{{ route('donate') }}" 
+            <a href="{{ route('donate.index') }}" 
                class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-red-600 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-600 transition-colors font-bold text-base">
                 {{ __('Support Our Work') }}
             </a>
