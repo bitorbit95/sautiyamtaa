@@ -33,7 +33,7 @@
 <!-- Search and Filter Section -->
 <section class="py-8 bg-gray-100 border-b-4 border-red-600">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <form method="GET" action="{{ route('stories') }}" class="flex flex-col lg:flex-row gap-6 items-center justify-between">
+        <form method="GET" action="{{ route('stories.index') }}" class="flex flex-col lg:flex-row gap-6 items-center justify-between">
             <!-- Search -->
             <div class="flex-1 max-w-md">
                 <div class="relative">
@@ -269,7 +269,7 @@
                     </svg>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ __('No stories found') }}</h3>
                     <p class="text-gray-600 mb-8">{{ __('Try adjusting your search criteria or browse all stories.') }}</p>
-                    <a href="{{ route('stories') }}" class="inline-block bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 font-semibold">
+                    <a href="{{ route('stories.index') }}" class="inline-block bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-3 rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 font-semibold">
                         {{ __('View All Stories') }}
                     </a>
                 </div>
@@ -287,7 +287,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             @foreach($storyTypes as $key => $typeConfig)
-            <a href="{{ route('stories.type', $key) }}" 
+            <a href="{{ url('stories/type', $key) }}" 
                class="group block bg-gradient-to-br from-gray-900 to-black border-2 border-gray-800 rounded-xl p-8 text-center hover:border-red-500 transition-all duration-300 transform hover:-translate-y-2">
                 <div class="mb-6">
                     <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-r 
