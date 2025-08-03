@@ -13,7 +13,8 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
           <script src="https://cdn.tailwindcss.com"></script>
-        <!-- @vite(['resources/css/app.css', 'resources/js/app.js']) -->
+        {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
+
         @stack('styles')
         
         <style>
@@ -120,7 +121,7 @@
                         </a>
                         
                         <!-- Enhanced Donate Button -->
-                        <a href="{{ route('donate') }}" 
+                        <a href="{{ route('donate.index') }}" 
                            class="bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-3 rounded-full hover:from-red-500 hover:to-red-400 transition-all duration-300 transform hover:scale-105 font-bold shadow-lg hover:shadow-red-500/25">
                             {{ __('navigation.donate') }}
                         </a>
@@ -193,7 +194,7 @@
                         </a>
                         
                         <div class="pt-4">
-                            <a href="{{ route('donate') }}" 
+                            <a href="{{ route('donate.index') }}" 
                                class="block bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-4 rounded-full hover:from-red-500 hover:to-red-400 transition-all duration-300 font-bold text-center shadow-lg">
                                 {{ __('navigation.donate') }}
                             </a>
@@ -307,7 +308,7 @@
                             <li><a href="{{ route('blogs.index') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
                                 <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.blogs') }}</span>
                             </a></li>
-                            <li><a href="{{ route('stories') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                            <li><a href="{{ route('stories.index') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
                                 <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.stories') }}</span>
                             </a></li>
                             <li><a href="{{ route('contact') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
@@ -319,7 +320,7 @@
                     <div>
                         <h4 class="text-xl font-bold mb-6 text-red-400">{{ __('navigation.get_involved') }}</h4>
                         <ul class="space-y-3 mb-8">
-                            <li><a href="{{ route('donate') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                            <li><a href="{{ route('donate.index') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
                                 <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.donate') }}</span>
                             </a></li>
                             <li><a href="#" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">

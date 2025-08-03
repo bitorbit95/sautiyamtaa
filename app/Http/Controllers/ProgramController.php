@@ -1,83 +1,233 @@
 <?php
-// app/Http/Controllers/ProgramController.php
 
 namespace App\Http\Controllers;
 
+use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ProgramController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the programs.
+     */
+    public function index(Request $request): View
     {
-        $programs = [
-            [
-                'id' => 1,
-                'title' => 'Youth Leadership Development',
-                'title_sw' => 'Maendeleo ya Uongozi wa Vijana',
-                'slug' => 'youth-leadership',
-                'description' => 'Comprehensive program designed to develop leadership skills among young people aged 18-25.',
-                'description_sw' => 'Mradi mkamilifu uliobuniwa kuendeleza ujuzi wa uongozi miongoni mwa vijana wa umri wa miaka 18-25.',
-                'duration' => '6 months',
-                'duration_sw' => 'Miezi 6',
-                'participants' => 150,
-                'image' => 'leadership-program.jpg'
-            ],
-            [
-                'id' => 2,
-                'title' => 'Skills Training Initiative',
-                'title_sw' => 'Mradi wa Mafunzo ya Ujuzi',
-                'slug' => 'skills-training',
-                'description' => 'Vocational training in carpentry, tailoring, computer skills, and entrepreneurship.',
-                'description_sw' => 'Mafunzo ya ufundi katika useremala, kushona, ujuzi wa kompyuta, na uongozi wa biashara.',
-                'duration' => '3-12 months',
-                'duration_sw' => 'Miezi 3-12',
-                'participants' => 200,
-                'image' => 'skills-training.jpg'
-            ],
-            [
-                'id' => 3,
-                'title' => 'Community Support Program',
-                'title_sw' => 'Mradi wa Kusaidia Jamii',
-                'slug' => 'community-support',
-                'description' => 'Direct support for vulnerable families, orphans, and people with disabilities.',
-                'description_sw' => 'Msaada wa moja kwa moja kwa familia zilizo hatarini, yatima, na watu wenye ulemavu.',
-                'duration' => 'Ongoing',
-                'duration_sw' => 'Inaendelea',
-                'participants' => 300,
-                'image' => 'community-support.jpg'
-            ]
-        ];
+        $query = Program::active()->ordered();
 
-        return view('programs.index', compact('programs'));
+        // Filter by status if provided
+        if ($request->has('status') && in_array($request->status, ['upcoming', 'ongoing', 'completed'])) {
+            switch ($request->status) {
+                case 'upcoming':
+                    $query->whereDate('start_date', '>', now());
+                    break;
+                case 'ongoing':
+                    $query->whereDate('start_date', '<=', now())
+                          ->whereDate('end_date', '>=', now());
+                    break;
+                case 'completed':
+                    $query->whereDate('end_date', '<', now());
+                    break;
+            }
+        }
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'like', "%{$searchTerm}%")
+                  ->orWhere('title_sw', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%")
+                  ->orWhere('description_sw', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $programs = $query->paginate(12);
+        $featuredPrograms = Program::active()->featured()->ordered()->limit(3)->get();
+
+        return view('programs.index', compact('programs', 'featuredPrograms'));
     }
 
-    public function show($slug)
+    /**
+     * Display the specified program.
+     */
+    public function show(Program $program): View
     {
-        // Sample program details - replace with actual database query
-        $programs = [
-            'youth-leadership' => [
-                'title' => 'Youth Leadership Development',
-                'title_sw' => 'Maendeleo ya Uongozi wa Vijana',
-                'description' => 'Our flagship program that transforms young people into confident leaders.',
-                'description_sw' => 'Mradi wetu mkuu unaobadilisha vijana kuwa viongozi wenye ujasiri.',
-                'objectives' => [
-                    'Develop leadership and communication skills',
-                    'Build confidence and self-esteem',
-                    'Create networking opportunities',
-                    'Provide mentorship and guidance'
-                ],
-                'objectives_sw' => [
-                    'Kuendeleza ujuzi wa uongozi na mawasiliano',
-                    'Kujenga ujasiri na kujithamini',
-                    'Kuunda fursa za kuwasiliana',
-                    'Kutoa uongozaji na mwongozo'
-                ]
-            ]
-        ];
+        // Check if program is active
+        if ($program->status !== 'active') {
+            abort(404);
+        }
 
-        $program = $programs[$slug] ?? abort(404);
-        
-        return view('programs.show', compact('program', 'slug'));
+        // Get related programs (same location or similar)
+        $relatedPrograms = Program::active()
+            ->where('id', '!=', $program->id)
+            ->where(function ($query) use ($program) {
+                $query->where('location', $program->location)
+                      ->orWhere('location_sw', $program->location_sw);
+            })
+            ->ordered()
+            ->limit(3)
+            ->get();
+
+        // If no related programs found, get any other active programs
+        if ($relatedPrograms->count() < 3) {
+            $additionalPrograms = Program::active()
+                ->where('id', '!=', $program->id)
+                ->whereNotIn('id', $relatedPrograms->pluck('id'))
+                ->ordered()
+                ->limit(3 - $relatedPrograms->count())
+                ->get();
+
+            $relatedPrograms = $relatedPrograms->merge($additionalPrograms);
+        }
+
+        return view('programs.show', compact('program', 'relatedPrograms'));
+    }
+
+    /**
+     * Show the form for creating a new program (Admin only).
+     */
+    public function create(): View
+    {
+        return view('admin.programs.create');
+    }
+
+    /**
+     * Store a newly created program (Admin only).
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'title_sw' => 'nullable|string|max:255',
+            'description' => 'required|string',
+            'description_sw' => 'nullable|string',
+            'full_description' => 'nullable|string',
+            'full_description_sw' => 'nullable|string',
+            'duration' => 'required|string|max:255',
+            'duration_sw' => 'nullable|string|max:255',
+            'participants' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallery.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|in:active,inactive,draft',
+            'sort_order' => 'required|integer|min:0',
+            'objectives' => 'nullable|array',
+            'requirements' => 'nullable|array',
+            'location' => 'nullable|string|max:255',
+            'location_sw' => 'nullable|string|max:255',
+            'cost' => 'nullable|numeric|min:0',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_featured' => 'boolean'
+        ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('programs', 'public');
+        }
+
+        // Handle gallery upload
+        if ($request->hasFile('gallery')) {
+            $galleryImages = [];
+            foreach ($request->file('gallery') as $file) {
+                $galleryImages[] = $file->store('programs/gallery', 'public');
+            }
+            $validated['gallery'] = $galleryImages;
+        }
+
+        $program = Program::create($validated);
+
+        return redirect()->route('admin.programs.index')
+            ->with('success', 'Program created successfully.');
+    }
+
+    /**
+     * Show the form for editing the specified program (Admin only).
+     */
+    public function edit(Program $program): View
+    {
+        return view('admin.programs.edit', compact('program'));
+    }
+
+    /**
+     * Update the specified program (Admin only).
+     */
+    public function update(Request $request, Program $program)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'title_sw' => 'nullable|string|max:255',
+            'description' => 'required|string',
+            'description_sw' => 'nullable|string',
+            'full_description' => 'nullable|string',
+            'full_description_sw' => 'nullable|string',
+            'duration' => 'required|string|max:255',
+            'duration_sw' => 'nullable|string|max:255',
+            'participants' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallery.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|in:active,inactive,draft',
+            'sort_order' => 'required|integer|min:0',
+            'objectives' => 'nullable|array',
+            'requirements' => 'nullable|array',
+            'location' => 'nullable|string|max:255',
+            'location_sw' => 'nullable|string|max:255',
+            'cost' => 'nullable|numeric|min:0',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_featured' => 'boolean'
+        ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($program->image) {
+                \Storage::disk('public')->delete($program->image);
+            }
+            $validated['image'] = $request->file('image')->store('programs', 'public');
+        }
+
+        // Handle gallery upload
+        if ($request->hasFile('gallery')) {
+            // Delete old gallery images
+            if ($program->gallery) {
+                foreach ($program->gallery as $image) {
+                    \Storage::disk('public')->delete($image);
+                }
+            }
+            
+            $galleryImages = [];
+            foreach ($request->file('gallery') as $file) {
+                $galleryImages[] = $file->store('programs/gallery', 'public');
+            }
+            $validated['gallery'] = $galleryImages;
+        }
+
+        $program->update($validated);
+
+        return redirect()->route('admin.programs.index')
+            ->with('success', 'Program updated successfully.');
+    }
+
+    /**
+     * Remove the specified program (Admin only).
+     */
+    public function destroy(Program $program)
+    {
+        // Delete associated images
+        if ($program->image) {
+            \Storage::disk('public')->delete($program->image);
+        }
+
+        if ($program->gallery) {
+            foreach ($program->gallery as $image) {
+                \Storage::disk('public')->delete($image);
+            }
+        }
+
+        $program->delete();
+
+        return redirect()->route('admin.programs.index')
+            ->with('success', 'Program deleted successfully.');
     }
 }
-
