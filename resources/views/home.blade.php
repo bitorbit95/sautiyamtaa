@@ -109,7 +109,7 @@
         <h2 class="text-3xl font-bold mb-4">{{ __('messages.get_involved') }}</h2>
         <p class="text-xl mb-8 text-red-100">Join us in empowering youth and transforming communities</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href="{{ route('donate') }}" class="bg-white text-red-600 px-8 py-3 rounded-full font-semibold hover:bg-red-50 transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
+            <a href="{{ route('donate.index') }}" class="bg-white text-red-600 px-8 py-3 rounded-full font-semibold hover:bg-red-50 transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
                 {{ __('messages.donate_now') }}
             </a>
             <a href="{{ route('contact') }}" class="bg-black text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-900 transition-all duration-300 transform hover:scale-105 hover:shadow-xl border-2 border-white">
