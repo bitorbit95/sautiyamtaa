@@ -1,9 +1,9 @@
-name: Simple Laravel FTP Deploy
+name: Deploy Laravel App to DirectAdmin
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_dispatch:
+    branches: [ main, master ]  # Deploy when pushing to main/master branch
+  workflow_dispatch:  # Allow manual deployment
 
 jobs:
   deploy:
@@ -16,28 +16,44 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: '8.1'  # Adjust to your PHP version
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
         
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      
     - name: Install Composer Dependencies
       run: composer install --no-dev --optimize-autoloader
+      
+    - name: Generate Application Key
+      run: php artisan key:generate
+      
+    - name: Directory permissions
+      run: chmod -R 755 storage bootstrap/cache
       
     - name: Install Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '22'
+        node-version: '18'
         
-    - name: Install NPM dependencies and build
+    - name: Install NPM dependencies
+      run: npm ci
+      
+    - name: Build assets
+      run: npm run build
+      
+    - name: Create deployment directory
       run: |
-        npm ci
-       
+        mkdir -p deploy
+        rsync -av --exclude-from='.deployignore' . deploy/
         
-    - name: Deploy via FTP
+    - name: Deploy to DirectAdmin via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./
+        local-dir: ./deploy/
         server-dir: /domains/sautiyamtaa.co.ke/public_html/
         exclude: |
           **/.git*
@@ -45,6 +61,46 @@ jobs:
           **/node_modules/**
           .env.example
           .gitignore
+          .gitattributes
           README.md
+          .deployignore
           tests/**
+          .phpunit.result.cache
+          phpunit.xml
+          .editorconfig
+          webpack.mix.js
           package*.json
+          vite.config.js
+          tailwind.config.js
+          postcss.config.js
+          
+    - name: Run post-deployment commands via SSH
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          cd /domains/sautiyamtaa.co.ke/public_html/
+          
+          # Install/update composer dependencies
+          composer install --no-dev --optimize-autoloader
+          
+          # Set proper permissions
+          chmod -R 755 storage/
+          chmod -R 755 bootstrap/cache/
+          
+          # Clear all caches
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan cache:clear
+          
+          # Cache for production
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          
+          # Run migrations if needed (uncomment the line below)
+          # php artisan migrate --force
