@@ -119,7 +119,7 @@
                                 {{ __('messages.learn_more') }}
                             </span>
                         </a>
-                        <a href="{{ route('donate') }}" 
+                        <a href="{{ route('donate.index') }}" 
                            class="group bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-4 rounded-full font-semibold hover:from-red-500 hover:to-red-400 transition-all duration-300 btn-3d border-2 border-red-400">
                             <span class="group-hover:text-red-100 transition-colors">
                                 {{ __('messages.donate_now') }}
