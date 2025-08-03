@@ -56,10 +56,11 @@ class BlogController extends Controller
         
         // Get popular tags
         $popularTags = BlogTag::withCount('publishedPosts')
-    ->where('published_posts_count', '>', 0)
+    ->having('published_posts_count', '>', 0)
     ->orderBy('published_posts_count', 'desc')
     ->take(10)
     ->get();
+
 
 
         return view('blog.index', compact(
