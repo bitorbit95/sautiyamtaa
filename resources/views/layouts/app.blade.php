@@ -120,19 +120,19 @@
                         <div>
                             <h4 class="text-md font-semibold mb-3 text-red-400 border-b border-gray-700 pb-2">{{ __('navigation.quick_links') }}</h4>
                             <ul class="space-y-2 text-sm">
-                                <li><a href="{{ route('about') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
+                                <li><a href="/about" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
                                     <span class="w-1.5 h-1.5 bg-gray-600 rounded-full mr-2 group-hover:bg-red-400 transition-colors"></span>
                                     {{ __('navigation.about') }}
                                 </a></li>
-                                <li><a href="{{ route('programs') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
+                                <li><a href="/programs" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
                                     <span class="w-1.5 h-1.5 bg-gray-600 rounded-full mr-2 group-hover:bg-red-400 transition-colors"></span>
                                     {{ __('navigation.programs') }}
                                 </a></li>
-                                <li><a href="{{ route('blogs') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
+                                <li><a href="/blogs" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
                                     <span class="w-1.5 h-1.5 bg-gray-600 rounded-full mr-2 group-hover:bg-red-400 transition-colors"></span>
                                     {{ __('navigation.blogs') }}
                                 </a></li>
-                                <li><a href="{{ route('contact') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
+                                <li><a href="/contact" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
                                     <span class="w-1.5 h-1.5 bg-gray-600 rounded-full mr-2 group-hover:bg-red-400 transition-colors"></span>
                                     {{ __('navigation.contact') }}
                                 </a></li>
@@ -142,14 +142,14 @@
                         <div>
                             <h4 class="text-md font-semibold mb-3 text-red-400 border-b border-gray-700 pb-2">{{ __('navigation.language') }}</h4>
                             <div class="space-y-2">
-                                <a href="{{ route('locale.switch', 'en') }}" 
+                                <a href="/locale/en" 
                                    class="flex items-center space-x-2 px-3 py-2 text-sm rounded-lg transition-all duration-200 {{ app()->getLocale() == 'en' ? 'bg-red-600 text-white shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd"/>
                                     </svg>
                                     <span>English</span>
                                 </a>
-                                <a href="{{ route('locale.switch', 'sw') }}" 
+                                <a href="/locale/sw" 
                                    class="flex items-center space-x-2 px-3 py-2 text-sm rounded-lg transition-all duration-200 {{ app()->getLocale() == 'sw' ? 'bg-red-600 text-white shadow-lg' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd"/>
@@ -162,9 +162,9 @@
                             <div class="mt-6">
                                 <h5 class="text-sm font-semibold mb-2 text-red-400">Dashboard</h5>
                                 <div class="space-y-1">
-                                    <a href="#" class="block text-xs text-gray-400 hover:text-gray-300">System Status</a>
-                                    <a href="#" class="block text-xs text-gray-400 hover:text-gray-300">Help Center</a>
-                                    <a href="#" class="block text-xs text-gray-400 hover:text-gray-300">API Documentation</a>
+                                    <a href="/dashboard/status" class="block text-xs text-gray-400 hover:text-gray-300">System Status</a>
+                                    <a href="/help" class="block text-xs text-gray-400 hover:text-gray-300">Help Center</a>
+                                    <a href="/api/docs" class="block text-xs text-gray-400 hover:text-gray-300">API Documentation</a>
                                 </div>
                             </div>
                         </div>
