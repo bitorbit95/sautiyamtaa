@@ -1,527 +1,467 @@
-@extends('layouts.guest')
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-@section('title', __('navigation.home'))
+        <title>{{ config('app.name', 'Sauti ya Mtaa') }} - @yield('title', __('navigation.home'))</title>
+        <meta name="description" content="@yield('description', __('messages.organization_description'))">
 
-@push('styles')
-<style>
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(-5deg); }
-        50% { transform: translateY(-20px) rotate(5deg); }
-    }
-    
-    @keyframes slideIn {
-        from { transform: translateX(100%) rotate(15deg) scale(0.8); opacity: 0; }
-        to { transform: translateX(0) rotate(-5deg) scale(1); opacity: 1; }
-    }
-    
-    @keyframes slideOut {
-        from { transform: translateX(0) rotate(-5deg) scale(1); opacity: 1; }
-        to { transform: translateX(-100%) rotate(-15deg) scale(0.8); opacity: 0; }
-    }
-    
-    @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
-        50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.3); }
-    }
-    
-    @keyframes gradient-shift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    @keyframes sparkle {
-        0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
-        50% { transform: scale(1) rotate(180deg); opacity: 1; }
-    }
-    
-    .carousel-item {
-        animation: float 6s ease-in-out infinite;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .carousel-item:hover {
-        transform: scale(1.1) rotate(0deg) !important;
-        z-index: 10;
-        filter: brightness(1.2) saturate(1.3);
-    }
-    
-    .carousel-item.entering {
-        animation: slideIn 0.8s ease-out forwards, float 6s ease-in-out infinite 0.8s;
-    }
-    
-    .carousel-item.exiting {
-        animation: slideOut 0.8s ease-in forwards;
-    }
-    
-    .text-shadow {
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.3);
-    }
-    
-    .backdrop-blur-custom {
-        backdrop-filter: blur(12px);
-        background: linear-gradient(135deg, 
-            rgba(0, 0, 0, 0.4) 0%, 
-            rgba(127, 29, 29, 0.3) 50%, 
-            rgba(0, 0, 0, 0.4) 100%);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-    
-    .stat-card-hover {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card-hover::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    .stat-card-hover:hover::before {
-        left: 100%;
-    }
-    
-    .stat-card-hover:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.3), 0 0 0 1px rgba(239, 68, 68, 0.1);
-    }
-    
-    .gradient-text {
-        background: linear-gradient(45deg, #ef4444, #ffffff, #f87171, #fca5a5);
-        background-size: 300% 300%;
-        animation: gradient-shift 3s ease infinite;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .sparkle {
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background: #ef4444;
-        border-radius: 50%;
-        animation: sparkle 2s ease-in-out infinite;
-    }
-    
-    .sparkle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
-    .sparkle:nth-child(2) { top: 80%; left: 20%; animation-delay: 0.5s; }
-    .sparkle:nth-child(3) { top: 40%; right: 15%; animation-delay: 1s; }
-    .sparkle:nth-child(4) { bottom: 30%; right: 10%; animation-delay: 1.5s; }
-    .sparkle:nth-child(5) { top: 60%; left: 80%; animation-delay: 0.3s; }
-    .sparkle:nth-child(6) { bottom: 70%; left: 60%; animation-delay: 0.8s; }
-    
-    .program-card {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .program-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .program-card:hover::before {
-        opacity: 1;
-    }
-    
-    .program-card:hover {
-        transform: translateY(-10px) rotateX(5deg);
-        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(239, 68, 68, 0.2);
-    }
-    
-    .testimonial-card {
-        transition: all 0.3s ease;
-        position: relative;
-    }
-    
-    .testimonial-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(239, 68, 68, 0.2);
-    }
-    
-    .cta-section {
-        background: linear-gradient(135deg, #dc2626, #991b1b, #7f1d1d);
-        background-size: 400% 400%;
-        animation: gradient-shift 8s ease infinite;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .cta-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(circle at 30% 70%, rgba(239, 68, 68, 0.3) 0%, transparent 50%),
-                    radial-gradient(circle at 70% 30%, rgba(220, 38, 38, 0.3) 0%, transparent 50%);
-        animation: float 10s ease-in-out infinite;
-    }
-    
-    .button-primary {
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    .button-primary::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    .button-primary:hover::before {
-        left: 100%;
-    }
-    
-    .section-background {
-        background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-        position: relative;
-    }
-    
-    .section-background::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: 
-            radial-gradient(circle at 25% 25%, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, rgba(220, 38, 38, 0.1) 0%, transparent 50%);
-        pointer-events: none;
-    }
-</style>
-@endpush
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
-@section('content')
-<!-- Hero Section -->
-<section class="relative bg-gradient-to-br from-red-900 via-black to-red-800 text-white py-20 min-h-screen flex items-center overflow-hidden">
-    <!-- Enhanced Background Pattern -->
-    <div class="absolute inset-0 opacity-20">
-        <div class="absolute inset-0" style="background-image: 
-            radial-gradient(circle at 25% 25%, #ef4444 0%, transparent 50%), 
-            radial-gradient(circle at 75% 75%, #dc2626 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, #991b1b 0%, transparent 30%);"></div>
-    </div>
-    
-    <!-- Sparkle Elements -->
-    <div class="absolute inset-0">
-        <div class="sparkle"></div>
-        <div class="sparkle"></div>
-        <div class="sparkle"></div>
-        <div class="sparkle"></div>
-        <div class="sparkle"></div>
-        <div class="sparkle"></div>
-    </div>
-    
-    <!-- Enhanced Floating Images Carousel -->
-    <div class="absolute inset-0 overflow-hidden opacity-90">
-        <div class="carousel-container relative w-full h-full">
-            <!-- Image 1 -->
-            <div class="carousel-item absolute top-1/4 left-1/4 w-64 h-48 transform -rotate-12">
-                <div class="relative group">
-                    <img src="{{ asset('images/2001815_bee-hive-1_1080x1440.jpg') }}" 
-                         alt="Community" 
-                         class="w-full h-full object-cover rounded-xl shadow-2xl border-4 border-red-400/40 group-hover:border-red-300/60 transition-all duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
-                </div>
-            </div>
+          <script src="https://cdn.tailwindcss.com"></script>
+        <!-- @vite(['resources/css/app.css', 'resources/js/app.js']) -->
+        @stack('styles')
+        
+        <style>
+            @keyframes slideDown {
+                from { transform: translateY(-100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
             
-            <!-- Image 2 -->
-            <div class="carousel-item absolute top-1/3 right-1/4 w-56 h-40 transform rotate-8" style="animation-delay: -2s;">
-                <div class="relative group">
-                    <img src="{{ asset('images/2001809_thumbnail_1080x810.jpg') }}"
-                         alt="Education" 
-                         class="w-full h-full object-cover rounded-xl shadow-2xl border-4 border-red-400/40 group-hover:border-red-300/60 transition-all duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
-                </div>
-            </div>
+            @keyframes glow {
+                0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.3); }
+                50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.3); }
+            }
             
-            <!-- Image 3 -->
-            <div class="carousel-item absolute bottom-1/4 left-1/3 w-60 h-44 transform -rotate-6" style="animation-delay: -4s;">
-                <div class="relative group">
-                    <img src="{{ asset('images/2001815_bee-hive-1_1080x1440.jpg') }}"
-                         alt="Helping" 
-                         class="w-full h-full object-cover rounded-xl shadow-2xl border-4 border-red-400/40 group-hover:border-red-300/60 transition-all duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
-                </div>
-            </div>
+            .nav-link {
+                position: relative;
+                transition: all 0.3s ease;
+            }
             
-            <!-- Image 4 -->
-            <div class="carousel-item absolute top-1/2 left-1/6 w-52 h-36 transform rotate-12" style="animation-delay: -1s;">
-                <div class="relative group">
-                    <img src="{{ asset('images/DbyC0odW0AAFVM1.jfif') }}"
-                         alt="Nature" 
-                         class="w-full h-full object-cover rounded-xl shadow-2xl border-4 border-red-400/40 group-hover:border-red-300/60 transition-all duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
-                </div>
-            </div>
+            .nav-link::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 0;
+                height: 2px;
+                background: linear-gradient(90deg, #ef4444, #dc2626);
+                transition: width 0.3s ease;
+            }
             
-            <!-- Image 5 -->
-            <div class="carousel-item absolute bottom-1/3 right-1/3 w-58 h-42 transform -rotate-10" style="animation-delay: -3s;">
-                <div class="relative group">
-                    <img src="{{ asset('images/group-3137670_1280.jpg') }}"
-                         alt="Support" 
-                         class="w-full h-full object-cover rounded-xl shadow-2xl border-4 border-red-400/40 group-hover:border-red-300/60 transition-all duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Enhanced Content Overlay -->
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div class="text-center">
-            <!-- Enhanced Main Content Box -->
-            <div class="backdrop-blur-custom rounded-3xl p-8 md:p-16 border-2 border-red-400/30 shadow-2xl">
-                <h1 class="text-5xl md:text-8xl font-bold mb-8 text-shadow">
-                    <span class="gradient-text">
-                        {{ __('messages.organization_name') }}
-                    </span>
-                </h1>
-                <p class="text-xl md:text-3xl mb-10 max-w-4xl mx-auto text-shadow font-light leading-relaxed">
-                    {{ __('messages.vision') }}
-                </p>
-                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                    <a href="{{ route('programs') }}" 
-                       class="button-primary group bg-white text-black px-10 py-5 rounded-full font-bold hover:bg-red-50 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl text-lg">
-                        <span class="group-hover:text-red-600 transition-colors relative z-10">
-                            {{ __('messages.learn_more') }}
-                        </span>
-                    </a>
-                    <a href="{{ route('donate') }}" 
-                       class="button-primary group bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-5 rounded-full font-bold hover:from-red-500 hover:to-red-400 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-red-400 text-lg">
-                        <span class="group-hover:text-red-100 transition-colors relative z-10">
-                            {{ __('messages.donate_now') }}
-                        </span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Enhanced Animated Elements -->
-    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-        </svg>
-    </div>
-</section>
-
-<!-- Enhanced Stats Section -->
-<section class="py-20 section-background">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-white mb-4">Our Impact</h2>
-            <div class="w-24 h-1 bg-gradient-to-r from-red-500 to-red-400 mx-auto rounded-full"></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div class="bg-gradient-to-br from-red-900 to-black p-8 rounded-2xl shadow-2xl border border-red-400/30 stat-card-hover">
-                <div class="text-4xl font-bold text-red-400 mb-3">{{ number_format($stats['youth_empowered']) }}+</div>
-                <div class="text-red-200 text-lg font-medium">{{ __('messages.youth') }} {{ __('messages.empowerment') }}</div>
-            </div>
-            <div class="bg-gradient-to-br from-red-900 to-black p-8 rounded-2xl shadow-2xl border border-red-400/30 stat-card-hover">
-                <div class="text-4xl font-bold text-red-400 mb-3">{{ $stats['programs_running'] }}+</div>
-                <div class="text-red-200 text-lg font-medium">{{ __('navigation.programs') }}</div>
-            </div>
-            <div class="bg-gradient-to-br from-red-900 to-black p-8 rounded-2xl shadow-2xl border border-red-400/30 stat-card-hover">
-                <div class="text-4xl font-bold text-red-400 mb-3">{{ $stats['communities_served'] }}+</div>
-                <div class="text-red-200 text-lg font-medium">{{ __('messages.communities') }}</div>
-            </div>
-            <div class="bg-gradient-to-br from-red-900 to-black p-8 rounded-2xl shadow-2xl border border-red-400/30 stat-card-hover">
-                <div class="text-4xl font-bold text-red-400 mb-3">{{ $stats['years_of_service'] }}+</div>
-                <div class="text-red-200 text-lg font-medium">Years of Service</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Enhanced Featured Programs -->
-<section class="py-20 bg-black relative overflow-hidden">
-    <div class="absolute inset-0 opacity-5">
-        <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, #ef4444 0px, #ef4444 1px, transparent 1px, transparent 20px);"></div>
-    </div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center mb-16">
-            <h2 class="text-4xl font-bold text-white mb-6">{{ __('navigation.programs') }}</h2>
-            <p class="text-red-200 max-w-3xl mx-auto text-xl leading-relaxed">Discover our impactful programs designed to empower youth and transform communities through innovative approaches and sustainable solutions.</p>
-            <div class="w-32 h-1 bg-gradient-to-r from-red-500 to-red-400 mx-auto rounded-full mt-6"></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-            @foreach($featuredPrograms as $program)
-            <div class="program-card bg-gradient-to-br from-red-900 to-black rounded-2xl shadow-2xl overflow-hidden border border-red-400/30">
-                <div class="h-56 bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-red-600/20 to-red-800/20"></div>
-                    <div class="absolute bottom-6 left-6 right-6">
-                        <div class="w-full h-2 bg-gradient-to-r from-red-400 to-red-300 rounded-full shadow-lg"></div>
-                    </div>
-                </div>
-                <div class="p-8">
-                    <h3 class="text-2xl font-bold mb-4 text-white leading-tight">
-                        {{ app()->getLocale() == 'sw' ? $program['title_sw'] : $program['title'] }}
-                    </h3>
-                    <p class="text-red-200 mb-6 leading-relaxed">
-                        {{ app()->getLocale() == 'sw' ? $program['description_sw'] : $program['description'] }}
-                    </p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-red-400 font-bold bg-red-900/50 px-3 py-1 rounded-full">{{ $program['participants'] }} participants</span>
-                        <a href="{{ route('programs.show', $program['id']) }}" class="text-red-400 hover:text-red-300 font-bold transition-colors text-lg group">
-                            {{ __('messages.learn_more') }} 
-                            <span class="group-hover:translate-x-1 inline-block transition-transform">→</span>
+            .nav-link:hover::after,
+            .nav-link.active::after {
+                width: 100%;
+            }
+            
+            .mobile-menu-slide {
+                animation: slideDown 0.3s ease-out;
+            }
+            
+            .logo-glow {
+                animation: glow 3s ease-in-out infinite;
+            }
+            
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(0, 0, 0, 0.8);
+                border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+            }
+            
+            .flash-message {
+                animation: slideDown 0.5s ease-out;
+            }
+            
+            .footer-gradient {
+                background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #7f1d1d 100%);
+            }
+            
+            .social-icon {
+                transition: all 0.3s ease;
+            }
+            
+            .social-icon:hover {
+                transform: scale(1.2) rotate(5deg);
+                color: #ef4444;
+            }
+        </style>
+    </head>
+    <body class="font-sans antialiased bg-black text-white">
+        <!-- Navigation -->
+        <nav class="glass-effect fixed w-full z-50 transition-all duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-20">
+                    <div class="flex items-center">
+                        <a href="{{ route('home') }}" class="flex items-center space-x-3 group">
+                            <div class="w-12 h-12 logo-gradient rounded-xl flex items-center justify-center logo-shadow transform hover:scale-105 transition-all duration-300">
+                                    <img src="{{ asset('images/logo.jpeg') }}" alt="{{ __('messages.organization_name') }}" class="w-8 h-8">
+                                </div>
+                            <span class="font-bold text-2xl text-white group-hover:text-red-400 transition-colors duration-300">
+                                {{ __('messages.organization_name') }}
+                            </span>
                         </a>
                     </div>
+
+                    <!-- Desktop Navigation -->
+                    <div class="hidden lg:flex items-center space-x-8">
+                        <a href="{{ route('home') }}" 
+                           class="nav-link text-gray-300 hover:text-red-400 transition-colors font-medium {{ request()->routeIs('home') ? 'text-red-400 active' : '' }}">
+                            {{ __('navigation.home') }}
+                        </a>
+                        <a href="{{ route('about') }}" 
+                           class="nav-link text-gray-300 hover:text-red-400 transition-colors font-medium {{ request()->routeIs('about') ? 'text-red-400 active' : '' }}">
+                            {{ __('navigation.about') }}
+                        </a>
+                        <a href="{{ route('programs') }}" 
+                           class="nav-link text-gray-300 hover:text-red-400 transition-colors font-medium {{ request()->routeIs('programs*') ? 'text-red-400 active' : '' }}">
+                            {{ __('navigation.programs') }}
+                        </a>
+                        <a href="{{ route('blogs.index') }}" 
+                           class="nav-link text-gray-300 hover:text-red-400 transition-colors font-medium {{ request()->routeIs('blogs') ? 'text-red-400 active' : '' }}">
+                            {{ __('navigation.blogs') }}
+                        </a>
+                        <a href="{{ route('contact') }}" 
+                           class="nav-link text-gray-300 hover:text-red-400 transition-colors font-medium {{ request()->routeIs('contact') ? 'text-red-400 active' : '' }}">
+                            {{ __('navigation.contact') }}
+                        </a>
+                        
+                        <!-- Enhanced Donate Button -->
+                        <a href="{{ route('donate') }}" 
+                           class="bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-3 rounded-full hover:from-red-500 hover:to-red-400 transition-all duration-300 transform hover:scale-105 font-bold shadow-lg hover:shadow-red-500/25">
+                            {{ __('navigation.donate') }}
+                        </a>
+
+                        <!-- Enhanced Language Switcher -->
+                        <div class="flex space-x-1 bg-gray-900/50 rounded-full p-1">
+                            <a href="{{ route('locale.switch', 'en') }}" 
+                               class="px-3 py-2 text-sm rounded-full font-medium transition-all duration-300 {{ app()->getLocale() == 'en' ? 'bg-red-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
+                                EN
+                            </a>
+                            <a href="{{ route('locale.switch', 'sw') }}" 
+                               class="px-3 py-2 text-sm rounded-full font-medium transition-all duration-300 {{ app()->getLocale() == 'sw' ? 'bg-red-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
+                                SW
+                            </a>
+                        </div>
+
+                        @auth
+                            <a href="{{ route('dashboard') }}" 
+                               class="text-gray-300 hover:text-red-400 transition-colors font-medium flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                </svg>
+                                <span>{{ __('navigation.dashboard') }}</span>
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" 
+                               class="text-gray-300 hover:text-red-400 transition-colors font-medium flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                </svg>
+                                <span>{{ __('auth.login') }}</span>
+                            </a>
+                        @endauth
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="lg:hidden flex items-center">
+                        <button id="mobile-menu-button" class="text-gray-300 hover:text-red-400 focus:outline-none transition-colors duration-300">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
-            @endforeach
-        </div>
-        <div class="text-center mt-12">
-            <a href="{{ route('programs') }}" class="button-primary bg-gradient-to-r from-red-600 to-red-500 text-white px-10 py-4 rounded-full hover:from-red-500 hover:to-red-400 transition-all duration-300 transform hover:scale-105 font-bold text-lg shadow-2xl">
-                {{ __('messages.view_all') }} {{ __('navigation.programs') }}
-            </a>
-        </div>
-    </div>
-</section>
 
-<!-- Enhanced Testimonials -->
-<section class="py-20 section-background">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-4xl font-bold text-white mb-6">{{ __('messages.testimonials') }}</h2>
-            <p class="text-red-200 text-xl">Hear from those whose lives have been transformed through our programs</p>
-            <div class="w-24 h-1 bg-gradient-to-r from-red-500 to-red-400 mx-auto rounded-full mt-6"></div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-            @foreach($testimonials as $testimonial)
-            <div class="testimonial-card bg-gradient-to-br from-red-900 to-black p-8 rounded-2xl shadow-2xl border border-red-400/30">
-                <div class="flex items-center mb-6">
-                    <div class="w-16 h-16 bg-gradient-to-br from-red-600 to-red-800 rounded-full mr-6 flex items-center justify-center shadow-xl">
-                        <span class="text-white font-bold text-xl">{{ substr($testimonial['name'], 0, 1) }}</span>
+            <!-- Enhanced Mobile Navigation Menu -->
+            <div id="mobile-menu" class="lg:hidden hidden">
+                <div class="mobile-menu-slide bg-black/95 backdrop-blur-lg border-t border-red-600/20">
+                    <div class="px-6 pt-4 pb-6 space-y-3">
+                        <a href="{{ route('home') }}" 
+                           class="block px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-300 font-medium {{ request()->routeIs('home') ? 'text-red-400 bg-red-900/20' : '' }}">
+                            {{ __('navigation.home') }}
+                        </a>
+                        <a href="{{ route('about') }}" 
+                           class="block px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-300 font-medium {{ request()->routeIs('about') ? 'text-red-400 bg-red-900/20' : '' }}">
+                            {{ __('navigation.about') }}
+                        </a>
+                        <a href="{{ route('programs') }}" 
+                           class="block px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-300 font-medium {{ request()->routeIs('programs*') ? 'text-red-400 bg-red-900/20' : '' }}">
+                            {{ __('navigation.programs') }}
+                        </a>
+                        <a href="{{ route('blogs.index') }}" 
+                           class="block px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-300 font-medium {{ request()->routeIs('blogs.index') ? 'text-red-400 bg-red-900/20' : '' }}">
+                            {{ __('navigation.blogs') }}
+                        </a>
+                        <a href="{{ route('contact') }}" 
+                           class="block px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-300 font-medium {{ request()->routeIs('contact') ? 'text-red-400 bg-red-900/20' : '' }}">
+                            {{ __('navigation.contact') }}
+                        </a>
+                        
+                        <div class="pt-4">
+                            <a href="{{ route('donate') }}" 
+                               class="block bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-4 rounded-full hover:from-red-500 hover:to-red-400 transition-all duration-300 font-bold text-center shadow-lg">
+                                {{ __('navigation.donate') }}
+                            </a>
+                        </div>
+                        
+                        <div class="flex justify-center space-x-2 pt-4">
+                            <a href="{{ route('locale.switch', 'en') }}" 
+                               class="px-4 py-2 text-sm rounded-full font-medium transition-all duration-300 {{ app()->getLocale() == 'en' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
+                                EN
+                            </a>
+                            <a href="{{ route('locale.switch', 'sw') }}" 
+                               class="px-4 py-2 text-sm rounded-full font-medium transition-all duration-300 {{ app()->getLocale() == 'sw' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
+                                SW
+                            </a>
+                        </div>
+
+                        @auth
+                            <div class="pt-4 border-t border-gray-700">
+                                <a href="{{ route('dashboard') }}" 
+                                   class="block px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-300 font-medium">
+                                    {{ __('navigation.dashboard') }}
+                                </a>
+                            </div>
+                        @else
+                            <div class="pt-4 border-t border-gray-700">
+                                <a href="{{ route('login') }}" 
+                                   class="block px-4 py-3 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-300 font-medium">
+                                    {{ __('auth.login') }}
+                                </a>
+                            </div>
+                        @endauth
                     </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="pt-20">
+            <!-- Enhanced Flash Messages -->
+            @if (session('success'))
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+                    <div class="flash-message bg-gradient-to-r from-green-900 to-green-800 border border-green-400/30 text-green-100 px-6 py-4 rounded-lg mb-6 shadow-lg">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ session('success') }}
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+                    <div class="flash-message bg-gradient-to-r from-red-900 to-red-800 border border-red-400/30 text-red-100 px-6 py-4 rounded-lg mb-6 shadow-lg">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ session('error') }}
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @yield('content')
+        </main>
+
+        <!-- Enhanced Footer -->
+        <footer class="footer-gradient text-white relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25% 25%, #ef4444 0%, transparent 50%), radial-gradient(circle at 75% 75%, #dc2626 0%, transparent 50%);"></div>
+            </div>
+            
+            <div class="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                    <div class="col-span-1 md:col-span-2">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <div class="w-14 h-14 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center shadow-lg">
+                                <span class="text-white font-bold text-xl">SYM</span>
+                            </div>
+                            <span class="font-bold text-3xl text-white">{{ __('messages.organization_name') }}</span>
+                        </div>
+                        <p class="text-gray-300 mb-6 max-w-lg text-lg leading-relaxed">{{ __('messages.vision') }}</p>
+                        <div class="space-y-2">
+                            <p class="text-gray-400 flex items-center">
+                                <svg class="w-5 h-5 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-9 4v10a2 2 0 002 2h10a2 2 0 002-2V11a2 2 0 00-2-2H7a2 2 0 00-2 2z"></path>
+                                </svg>
+                                {{ __('messages.established') }}: {{ __('messages.establishment_date') }}
+                            </p>
+                            <p class="text-gray-400 flex items-center">
+                                <svg class="w-5 h-5 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                {{ __('messages.location') }}: {{ __('messages.organization_location') }}
+                            </p>
+                        </div>
+                    </div>
+                    
                     <div>
-                        <h4 class="font-bold text-white text-lg">{{ $testimonial['name'] }}</h4>
-                        <p class="text-red-200 font-medium">
-                            {{ app()->getLocale() == 'sw' ? $testimonial['role_sw'] : $testimonial['role'] }}
-                        </p>
+                        <h4 class="text-xl font-bold mb-6 text-red-400">{{ __('navigation.quick_links') }}</h4>
+                        <ul class="space-y-3">
+                            <li><a href="{{ route('about') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.about') }}</span>
+                            </a></li>
+                            <li><a href="{{ route('programs') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.programs') }}</span>
+                            </a></li>
+                            <li><a href="{{ route('blogs.index') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.blogs') }}</span>
+                            </a></li>
+                            <li><a href="{{ route('stories') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.stories') }}</span>
+                            </a></li>
+                            <li><a href="{{ route('contact') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.contact') }}</span>
+                            </a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-xl font-bold mb-6 text-red-400">{{ __('navigation.get_involved') }}</h4>
+                        <ul class="space-y-3 mb-8">
+                            <li><a href="{{ route('donate') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.donate') }}</span>
+                            </a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.volunteer') }}</span>
+                            </a></li>
+                            <li><a href="#" class="text-gray-300 hover:text-red-400 transition-colors duration-300 flex items-center group">
+                                <span class="group-hover:translate-x-1 transition-transform duration-300">{{ __('navigation.partner') }}</span>
+                            </a></li>
+                        </ul>
+                        
+                        <div>
+                            <h5 class="text-lg font-bold mb-4 text-red-400">{{ __('navigation.follow_us') }}</h5>
+                            <div class="flex space-x-4">
+                                <a href="https://www.facebook.com/SautiYa254" class="social-icon text-gray-300 hover:text-red-400 p-2 bg-gray-800 rounded-full hover:bg-red-900/20">
+                                    <span class="sr-only">Facebook</span>
+                                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://x.com/Sauti_ya254" class="social-icon text-gray-300 hover:text-red-400 p-2 bg-gray-800 rounded-full hover:bg-red-900/20">
+                                    <span class="sr-only">Twitter</span>
+                                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://www.instagram.com/sauti_yamtaa/?hl=en" class="social-icon text-gray-300 hover:text-red-400 p-2 bg-gray-800 rounded-full hover:bg-red-900/20">
+                                    <span class="sr-only">Instagram</span>
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon text-gray-300 hover:text-red-400 p-2 bg-gray-800 rounded-full hover:bg-red-900/20">
+                                    <span class="sr-only">LinkedIn</span>
+                                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <p class="text-red-100 italic text-lg leading-relaxed">
-                    "{{ app()->getLocale() == 'sw' ? $testimonial['quote_sw'] : $testimonial['quote'] }}"
-                </p>
-                <div class="mt-4 flex text-red-400">
-                    <span class="text-2xl">★★★★★</span>
+                
+                <div class="border-t border-gray-700 mt-12 pt-8 text-center">
+                    <p class="text-gray-400">
+                        &copy; {{ date('Y') }} {{ __('messages.organization_name') }}. {{ __('messages.all_rights_reserved') }}.
+                    </p>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Empowering communities, transforming lives.
+                    </p>
                 </div>
             </div>
-            @endforeach
-        </div>
-    </div>
-</section>
+        </footer>
 
-<!-- Enhanced Call to Action -->
-<section class="py-20 cta-section text-white relative overflow-hidden">
-    <div class="absolute inset-0 bg-black/30"></div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-        <h2 class="text-4xl md:text-5xl font-bold mb-6 text-shadow">{{ __('messages.get_involved') }}</h2>
-        <p class="text-xl md:text-2xl mb-10 text-red-100 max-w-3xl mx-auto leading-relaxed">Join us in empowering youth and transforming communities. Your contribution makes a real difference in people's lives.</p>
-        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a href="{{ route('donate') }}" class="button-primary bg-white text-red-600 px-12 py-4 rounded-full font-bold hover:bg-red-50 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl text-lg">
-                {{ __('messages.donate_now') }}
-            </a>
-            <a href="{{ route('contact') }}" class="button-primary bg-black/80 text-white px-12 py-4 rounded-full font-bold hover:bg-black transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-white text-lg">
-                {{ __('messages.volunteer') }}
-            </a>
-        </div>
-    </div>
-</section>
-@endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const images = [
-        '{{ asset("images/10-frame-assembled-hive-kits-no-bees-821599.webp") }}',
-        '{{ asset("images/2001809_thumbnail_1080x810.jpg") }}',
-        '{{ asset("images/2001815_bee-hive-1_1080x1440.jpg") }}',
-        '{{ asset("images/D1UAu6jW0AA0i0G.jfif") }}',
-        '{{ asset("images/DbyC0odW0AAFVM1.jfif") }}',
-        '{{ asset("images/DbyCnQXX0AAU2cB.jfif") }}',
-        '{{ asset("images/EwJM3ilWQAk8ePU.jfif") }}',
-        '{{ asset("images/group-3137670_1280.jpg") }}'
-    ];
-    
-    const carouselItems = document.querySelectorAll('.carousel-item img');
-    let currentImageIndex = 0;
-    
-    function changeImages() {
-        carouselItems.forEach((img, index) => {
-            const newImageIndex = (currentImageIndex + index) % images.length;
-            
-            // Add transition effect
-            const parent = img.closest('.carousel-item');
-            parent.classList.add('exiting');
-            
-            setTimeout(() => {
-                img.src = images[newImageIndex];
-                parent.classList.remove('exiting');
-                parent.classList.add('entering');
+        <!-- Enhanced Mobile Menu JavaScript -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
                 
-                setTimeout(() => {
-                    parent.classList.remove('entering');
-                }, 800);
-            }, 400);
-        });
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Add animation class when showing
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        const menuContent = mobileMenu.querySelector('.mobile-menu-slide');
+                        menuContent.style.animation = 'none';
+                        menuContent.offsetHeight; // Trigger reflow
+                        menuContent.style.animation = null;
+                    }
+                });
+                
+                // Close mobile menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Close mobile menu when resizing to desktop
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 1024) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+                
+                // Add scroll effect to navigation
+                let lastScrollTop = 0;
+                const nav = document.querySelector('nav');
+                
+                window.addEventListener('scroll', function() {
+                    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    if (scrollTop > lastScrollTop && scrollTop > 100) {
+                        // Scrolling down
+                        nav.style.transform = 'translateY(-100%)';
+                        nav.style.opacity = '0.95';
+                    } else {
+                        // Scrolling up
+                        nav.style.transform = 'translateY(0)';
+                        nav.style.opacity = '1';
+                    }
+                    
+                    // Add background opacity based on scroll
+                    if (scrollTop > 50) {
+                        nav.style.background = 'rgba(0, 0, 0, 0.95)';
+                        nav.style.backdropFilter = 'blur(15px)';
+                    } else {
+                        nav.style.background = 'rgba(0, 0, 0, 0.8)';
+                        nav.style.backdropFilter = 'blur(10px)';
+                    }
+                    
+                    lastScrollTop = scrollTop;
+                });
+                
+                // Auto-hide flash messages
+                const flashMessages = document.querySelectorAll('.flash-message');
+                flashMessages.forEach(function(message) {
+                    setTimeout(function() {
+                        message.style.opacity = '0';
+                        message.style.transform = 'translateY(-20px)';
+                        setTimeout(function() {
+                            message.remove();
+                        }, 300);
+                    }, 5000);
+                });
+                
+                // Add smooth scrolling to all anchor links
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+            });
+        </script>
         
-        currentImageIndex = (currentImageIndex + 1) % images.length;
-    }
-    
-    // Change images every 5 seconds
-    setInterval(changeImages, 5000);
-    
-    // Add scroll reveal animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-    
-    // Observe elements for scroll animations
-    document.querySelectorAll('.stat-card-hover, .program-card, .testimonial-card').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(el);
-    });
-});
-</script>
-@endpush
+        @stack('scripts')
+    </body>
+</html>

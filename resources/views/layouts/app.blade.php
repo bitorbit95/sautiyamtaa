@@ -129,9 +129,9 @@
                                     <span class="w-1.5 h-1.5 bg-gray-600 rounded-full mr-2 group-hover:bg-red-400 transition-colors"></span>
                                     {{ __('navigation.programs') }}
                                 </a></li>
-                                <li><a href="{{ route('impact') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
+                                <li><a href="{{ route('blogs') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
                                     <span class="w-1.5 h-1.5 bg-gray-600 rounded-full mr-2 group-hover:bg-red-400 transition-colors"></span>
-                                    {{ __('navigation.impact') }}
+                                    {{ __('navigation.blogs') }}
                                 </a></li>
                                 <li><a href="{{ route('contact') }}" class="text-gray-300 hover:text-red-400 transition-colors duration-200 flex items-center group">
                                     <span class="w-1.5 h-1.5 bg-gray-600 rounded-full mr-2 group-hover:bg-red-400 transition-colors"></span>

@@ -5,7 +5,7 @@ return [
     'home' => 'Home',
     'about' => 'About Us',
     'programs' => 'Programs',
-    'impact' => 'Impact',
+    'blogs' => 'Blogs',
     'stories' => 'Stories',
     'contact' => 'Contact',
     'donate' => 'Donate',

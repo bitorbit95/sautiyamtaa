@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\AboutController;
@@ -23,14 +25,27 @@ Route::get('/programs/{slug}', [ProgramController::class, 'show'])->name('progra
 Route::get('/donate', [DonationController::class, 'index'])->name('donate');
 Route::post('/donate', [DonationController::class, 'store'])->name('donate.store');
 
-// Simple routes for pages without controllers yet
-Route::get('/contact', function () {
-    return view('contact');
-})->name('contact');
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
-Route::get('/impact', function () {
-    return view('impact');
-})->name('impact');
+// Admin Contact Routes (add these to your admin routes group)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/contacts', [ContactController::class, 'admin'])->name('contacts.index');
+    Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+    Route::patch('/contacts/{contact}/status', [ContactController::class, 'updateStatus'])->name('contacts.update-status');
+    Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+});
+// Simple routes for pages without controllers yet
+
+
+Route::prefix('blogs')->name('blogs.')->group(function () {
+    Route::get('/', [BlogController::class, 'index'])->name('index');
+    Route::get('/search', [BlogController::class, 'search'])->name('search');
+    Route::get('/category/{category:slug}', [BlogController::class, 'category'])->name('category');
+    Route::get('/tag/{tag:slug}', [BlogController::class, 'tag'])->name('tag');
+    Route::get('/{post:slug}', [BlogController::class, 'show'])->name('show');
+}
+);
 
 Route::get('/stories', function () {
     return view('stories');
